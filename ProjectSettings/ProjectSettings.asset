@@ -1,0 +1,12 @@
+PlayerSettings:
+  productGUID: 2d8d6a2f0d8a4e6a9f1c2b3d4e5f6071
+  AndroidBundleVersionCode: 1
+  AndroidMinSdkVersion: 23
+  AndroidTargetSdkVersion: 35
+  companyName: Solograph
+  productName: Solograph Racing
+  defaultScreenOrientation: 3
+  activeInputHandler: 0
+  applicationIdentifier:
+    Standalone: com.solograph.racinggame
+    Android: com.solograph.racinggame
