@@ -8,6 +8,9 @@ on:
 env:
   GODOT_VERSION: 4.3
   EXPORT_NAME: RacingGame
+  ANDROID_HOME: /opt/android-sdk
+  ANDROID_SDK_ROOT: /opt/android-sdk
+  JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
 
 jobs:
   export-android:
@@ -23,39 +26,89 @@ jobs:
         with:
           lfs: true
 
-      - name: Configure Godot Android environment
+      - name: Prepare Android SDK
         run: |
+          mkdir -p "$ANDROID_HOME"
+
+          if [ -d "/usr/lib/android-sdk" ]; then
+            cp -a /usr/lib/android-sdk/. "$ANDROID_HOME/"
+          elif [ -d "/opt/android-sdk" ]; then
+            echo "Android SDK already exists at /opt/android-sdk"
+          else
+            echo "ERROR: Android SDK not found in container"
+            exit 1
+          fi
+
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/33.0.2:$PATH"
+
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+
+          echo "Available Build Tools:"
+          find "$ANDROID_HOME/build-tools" -maxdepth 1 -mindepth 1 -type d -print || true
+
+          echo "Available Platforms:"
+          find "$ANDROID_HOME/platforms" -maxdepth 1 -mindepth 1 -type d -print || true
+
+      - name: Install required Android components
+        run: |
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
+
+          if command -v sdkmanager >/dev/null 2>&1; then
+            yes | sdkmanager --licenses || true
+            sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+          else
+            echo "sdkmanager not found; checking existing SDK..."
+          fi
+
+          test -d "$ANDROID_HOME/build-tools/33.0.2"
+          test -d "$ANDROID_HOME/platforms/android-33"
+
+      - name: Configure Java
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME"
+          java -version
+          test -x "$JAVA_HOME/bin/java"
+
+      - name: Configure Godot
+        run: |
+          mkdir -p ~/.config/godot
           mkdir -p ~/.local/share/godot/export_templates
-          mkdir -p ~/.config
 
-          # Copy the preconfigured Godot settings from the CI image.
-          cp -r /root/.config/godot ~/.config/godot
+          if [ -d "/root/.config/godot" ]; then
+            cp -a /root/.config/godot/. ~/.config/godot/
+          fi
 
-          # Install the Godot 4.3 export templates.
-          cp -r \
+          cp -a \
             /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable \
             ~/.local/share/godot/export_templates/
 
-      - name: Verify Android environment
+      - name: Configure Android environment for Godot
         run: |
-          echo "Godot:"
-          godot --version
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          echo "JAVA_HOME=$JAVA_HOME" >> "$GITHUB_ENV"
 
-          echo ""
-          echo "Java:"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          echo "$ANDROID_HOME/build-tools/33.0.2" >> "$GITHUB_PATH"
+
+      - name: Verify Android SDK
+        run: |
+          echo "=== Java ==="
           java -version
 
           echo ""
-          echo "Android SDK:"
-          ls -la /usr/lib/android-sdk
+          echo "=== Android SDK ==="
+          ls -la "$ANDROID_HOME"
 
           echo ""
-          echo "Build Tools:"
-          ls -la /usr/lib/android-sdk/build-tools/
+          echo "=== Build Tools 33.0.2 ==="
+          ls -la "$ANDROID_HOME/build-tools/33.0.2"
 
           echo ""
-          echo "Godot settings:"
-          cat ~/.config/godot/editor_settings-4.3.tres
+          echo "=== Android 33 Platform ==="
+          ls -la "$ANDROID_HOME/platforms/android-33"
 
       - name: Import project
         run: |
@@ -74,10 +127,13 @@ jobs:
 
       - name: Verify APK
         run: |
-          echo "Generated files:"
+          echo "=== Build output ==="
           ls -lh build/android/
 
-          test -f "build/android/${EXPORT_NAME}.apk"
+          if [ ! -f "build/android/${EXPORT_NAME}.apk" ]; then
+            echo "ERROR: APK was not created"
+            exit 1
+          fi
 
           echo ""
           echo "APK successfully created:"
