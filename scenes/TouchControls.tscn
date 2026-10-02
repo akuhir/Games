@@ -1,0 +1,87 @@
+[gd_scene load_steps=2 format=3]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(120, 120)
+
+[node name="TouchControls" type="CanvasLayer"]
+layer = 10
+
+[node name="BtnSteerLeft" type="TouchScreenButton" parent="."]
+position = Vector2(100, 1100)
+shape = SubResource("RectangleShape2D_1")
+action = "steer_left"
+visibility_mode = 0
+
+[node name="Bg" type="Polygon2D" parent="BtnSteerLeft"]
+color = Color(0.2, 0.2, 0.2, 0.5)
+polygon = PackedVector2Array(-60, -60, 60, -60, 60, 60, -60, 60)
+
+[node name="Label" type="Label" parent="BtnSteerLeft"]
+offset_left = -20.0
+offset_top = -14.0
+offset_right = 20.0
+offset_bottom = 14.0
+theme_override_font_sizes/font_size = 28
+text = "◀"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnSteerRight" type="TouchScreenButton" parent="."]
+position = Vector2(250, 1100)
+shape = SubResource("RectangleShape2D_1")
+action = "steer_right"
+visibility_mode = 0
+
+[node name="Bg" type="Polygon2D" parent="BtnSteerRight"]
+color = Color(0.2, 0.2, 0.2, 0.5)
+polygon = PackedVector2Array(-60, -60, 60, -60, 60, 60, -60, 60)
+
+[node name="Label" type="Label" parent="BtnSteerRight"]
+offset_left = -20.0
+offset_top = -14.0
+offset_right = 20.0
+offset_bottom = 14.0
+theme_override_font_sizes/font_size = 28
+text = "▶"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnBrake" type="TouchScreenButton" parent="."]
+position = Vector2(470, 1100)
+shape = SubResource("RectangleShape2D_1")
+action = "brake"
+visibility_mode = 0
+
+[node name="Bg" type="Polygon2D" parent="BtnBrake"]
+color = Color(0.5, 0.15, 0.15, 0.6)
+polygon = PackedVector2Array(-60, -60, 60, -60, 60, 60, -60, 60)
+
+[node name="Label" type="Label" parent="BtnBrake"]
+offset_left = -30.0
+offset_top = -14.0
+offset_right = 30.0
+offset_bottom = 14.0
+theme_override_font_sizes/font_size = 22
+text = "BRAKE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnAccelerate" type="TouchScreenButton" parent="."]
+position = Vector2(620, 1100)
+shape = SubResource("RectangleShape2D_1")
+action = "accelerate"
+visibility_mode = 0
+
+[node name="Bg" type="Polygon2D" parent="BtnAccelerate"]
+color = Color(0.15, 0.45, 0.15, 0.6)
+polygon = PackedVector2Array(-60, -60, 60, -60, 60, 60, -60, 60)
+
+[node name="Label" type="Label" parent="BtnAccelerate"]
+offset_left = -30.0
+offset_top = -14.0
+offset_right = 30.0
+offset_bottom = 14.0
+theme_override_font_sizes/font_size = 20
+text = "GAS"
+horizontal_alignment = 1
+vertical_alignment = 1
